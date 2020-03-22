@@ -156,6 +156,7 @@ for days_ago in range(0, 7):
                         infected[i] * weights3[2]
             new_infected = new_infected * infected.sum() / new_infected.sum()
             infected = new_infected.copy()
+            datum["smoothed_" + variable_name] = infected.tolist()
 
         csv_dates = df[df['denominazione_regione'] == denominazione_regione]['data'].to_numpy()
         csv_dates = csv_dates[:total_days_available-days_ago]
