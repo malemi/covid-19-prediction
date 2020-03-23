@@ -116,6 +116,7 @@ regioni = ["Piemonte", "Valle d'Aosta", "Lombardia", "P.A. Bolzano", "P.A. Trent
 
 variable_name = 'totale_ospedalizzati' #'ricoverati_con_sintomi'
 max_y_axis = {}  # record the maximum to plot forecasts
+datum = {}
 
 for days_ago in range(0, 7):
 
@@ -129,34 +130,29 @@ for days_ago in range(0, 7):
         dir_prefix = "real_"
 
     for denominazione_regione in regioni:
-        datum = {}
-        datum["smoothing"] = smoothing
-
-        datum["denominazione_regione"] = denominazione_regione
         infected = df[df['denominazione_regione'] == denominazione_regione][variable_name].to_numpy()
         total_days_available = len(infected)
         infected = infected[:total_days_available-days_ago]
-        datum[variable_name] = infected.tolist()
 
         orig_infected = infected.copy()
         if smoothing:
-            new_infected = np.zeros(len(infected))
+            smoothed_infected = np.zeros(len(infected))
             weights3 = (.15, .25, .6)
             weights2 = (.3, .7)
             for i in range(len(infected)):
                 if i == 0:
-                    new_infected[i] = infected[0]
+                    smoothed_infected[i] = infected[0]
                 elif i == 1:
-                    new_infected[i] = infected[i - 1] * weights2[0] + \
-                                      infected[i] * weights2[1]
+                    smoothed_infected[i] = infected[i - 1] * weights2[0] + \
+                                           infected[i] * weights2[1]
                 else:
-                    new_infected[i] = \
+                    smoothed_infected[i] = \
                         infected[i - 2] * weights3[0] + \
                         infected[i - 1] * weights3[1] + \
                         infected[i] * weights3[2]
-            new_infected = new_infected * infected.sum() / new_infected.sum()
-            infected = new_infected.copy()
-            datum["smoothed_" + variable_name] = infected.tolist()
+            smoothed_infected = smoothed_infected * infected.sum() / smoothed_infected.sum()
+            not_smoothed_infected = infected.copy()
+            infected = smoothed_infected.copy()
 
         csv_dates = df[df['denominazione_regione'] == denominazione_regione]['data'].to_numpy()
         csv_dates = csv_dates[:total_days_available-days_ago]
@@ -171,7 +167,14 @@ for days_ago in range(0, 7):
 
         all_dates_strings = [(first_day_str + datetime.timedelta(days=i)).strftime("%Y-%m-%d") for i in range(len(giorni) + days_forecasted)]
 
-        datum["all_dates"] = all_dates_strings
+        datum.setdefault(denominazione_regione, {})[last_day_str] = {}
+
+        datum[denominazione_regione][last_day_str]["smoothing"] = smoothing
+
+        datum[denominazione_regione][last_day_str] [variable_name] = infected.tolist()
+        if smoothing:
+            datum[denominazione_regione][last_day_str]["not_smoothed_" + variable_name] = not_smoothed_infected.tolist()
+        datum[denominazione_regione][last_day_str]["all_dates"] = all_dates_strings
 
         dates = [datetime.datetime.fromisoformat(d) for d in df[df['denominazione_regione'] == denominazione_regione]['data'].to_numpy()[:total_days_available-days_ago]]
 
@@ -256,7 +259,7 @@ for days_ago in range(0, 7):
         axes.set_ylim([0.0, max(future_ricoverati_best) * 1.2])
 
     #    try:
-        datum["stima_" + variable_name] = future_ricoverati_best.tolist()
+        datum[denominazione_regione][last_day_str]["stima_" + variable_name] = future_ricoverati_best.tolist()
         maxy = max_y_axis.setdefault(denominazione_regione, min(20000, 5 * max(infected)))
         plt.ylim(0, maxy)
         plt.plot(giorni, infected, 'b-')
@@ -274,8 +277,8 @@ for days_ago in range(0, 7):
         plt.xticks([])
 
         #    plt.show()
-        datum["rate"] = rate
-        datum["stima_rate"] = future_rate_best.tolist()
+        datum[denominazione_regione][last_day_str]["rate"] = rate
+        datum[denominazione_regione][last_day_str]["stima_rate"] = future_rate_best.tolist()
         plt.ylim(0.75, 2.5)
         plt.plot(giorni, rate, 'b-')
         plt.plot(range(present, far_future), future_rate_best, 'r-')
@@ -286,8 +289,6 @@ for days_ago in range(0, 7):
         plt.clf()
         plt.xticks([])
         plt.close()
-        with open(dir_name + "/" + denominazione_regione.replace(" ", "").lower() + ".json", "w") as f:
-            json.dump(datum, f)
-            ## plt.show()
-        # except Exception as e:
-        #     print("ERRORE " + denominazione_regione)
+        #print(datum)
+with open("all_data.json", "w") as f:
+    json.dump(datum, f)
