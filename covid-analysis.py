@@ -376,7 +376,7 @@ if __name__ == "__main__":
                     start_days_ago=args.start_days_ago,
                     days_analyzed=args.days_analyzed,  # last days analyzed
                     days_forecasted=args.days_forecasted,
-                    filter_regions=["Lombardia"],  #None, #["Italy "], #["China Hubei"],
+                    filter_regions=None, #["Italy "], #["China Hubei"], ["Lombardia"],
                     smoothing=args.smoothing,
                     json_name=args.json_name,
                     debug=args.debug,
