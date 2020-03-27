@@ -149,8 +149,14 @@ def make_prediction(url,
             dir_prefix = name_dataset + "_real_"
 
         for region in regions:
+            print(f"Region: {region}")
             infected = df[df[regions_field] == region][variable_name].to_numpy()
+            maxy = max(infected)*5.
             total_days_available = len(infected)
+            # We need at least days_ago days for the fit:
+            if total_days_available <= days_ago:
+                print(f"Not enough days: total_days_available={total_days_available}, days_ago={days_ago}")
+                continue
             infected = infected[:total_days_available-days_ago]
 
             orig_infected = infected.copy()
@@ -179,7 +185,7 @@ def make_prediction(url,
             dir_name = dir_prefix + last_day_str
             if not os.path.exists(dir_name):
                 os.makedirs(dir_name)
-            print(f"Region: {region}, last day: {last_day_str}")
+            print(f"last day: {last_day_str}")
 
             all_dates_strings = [(first_day_str + datetime.timedelta(days=i)).strftime("%Y-%m-%d") for i in range(len(giorni) + days_forecasted)]
 
@@ -230,7 +236,7 @@ def make_prediction(url,
                     found_start = True
                     break
 
-            if len(rate) - beginning_epidemic < 7 or not found_start:
+            if len(rate) - beginning_epidemic < max(7, smoothing) or not found_start:
                 print(f"Less than 7 days for {region}, or beginning not found. Skipping")
 
             else:
@@ -299,8 +305,7 @@ def make_prediction(url,
                 axes.set_ylim([0.0, max(future_infected_best) * 1.2])
 
                 datum[region][last_day_str]["forecasts_" + variable_name] = future_infected_best.tolist()
-                maxy = max_y_axis.setdefault(region, 3 * max(infected))
-                plt.ylim(0, maxy*5)
+                plt.ylim(0, maxy)
                 plt.plot(giorni, orig_infected, 'b-')
                 if ave_done:
                     plt.plot(range(present, far_future), future_infected_best_ave, 'r-')
@@ -314,9 +319,11 @@ def make_prediction(url,
                                ['' for i in range(far_future-present-peak)], rotation=45)
 
                 plt.title("Forecasts " + variable_name.replace("_", " ") + " " + region)
-                filename = dir_name + "/forecasts_" + make_name(region) + last_day_str + ".png"
-                plt.savefig(filename)
-                infected_img_names[region].append(filename)
+                forecasts_filename = dir_name + "/forecasts_" + make_name(region) + last_day_str + ".png"
+                if os.path.exists(forecasts_filename):
+                    os.remove(forecasts_filename)
+                plt.savefig(forecasts_filename)
+                infected_img_names[region].append(forecasts_filename)
                 plt.clf()
                 plt.xticks([])
 
@@ -328,7 +335,10 @@ def make_prediction(url,
                 plt.plot(range(present, far_future), future_rate_p_sigma, 'g-')
                 plt.plot(range(present, far_future), future_rate_m_sigma, 'g-')
                 plt.title("Rate " + variable_name.replace("_", " ") + " " + region)
-                plt.savefig(dir_name + "/rate_" + make_name(region) + last_day_str + ".png")
+                rate_filename = dir_name + "/rate_" + make_name(region) + last_day_str + ".png"
+                if os.path.exists(rate_filename):
+                    os.remove(rate_filename)
+                plt.savefig(rate_filename)
                 plt.clf()
                 plt.xticks([])
                 plt.close()
@@ -341,6 +351,8 @@ def make_prediction(url,
 
     for region in regions:
         animated_filename = f"{animated_dir}/{name_dataset}_{make_name(region)}.gif"
+        if os.path.exists(animated_filename):
+            os.remove(animated_filename)
         print(f"Creating animated image {animated_filename}")
         cmd = f"convert  -reverse -delay 100 -loop 0 {' '.join(infected_img_names[region][::-1])} {animated_filename}"
         time.sleep(0.5)
@@ -376,7 +388,7 @@ if __name__ == "__main__":
                     start_days_ago=args.start_days_ago,
                     days_analyzed=args.days_analyzed,  # last days analyzed
                     days_forecasted=args.days_forecasted,
-                    filter_regions=None, #["Italy "], #["China Hubei"], ["Lombardia"],
+                    filter_regions=["Hubei China"], #["Italy"], #["Hubei China"], ["Lombardia"],
                     smoothing=args.smoothing,
                     json_name=args.json_name,
                     debug=args.debug,
