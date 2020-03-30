@@ -168,7 +168,7 @@ def make_prediction(url,
                     if infected[i] > 0:
                         days_smoothed = min(i, smoothing)
                         #not_norm_w = np.array([2 ** (-i) for i in range(0, days_smoothed)][::-1])
-                        not_norm_w = np.array([1./np.sqrt(i) for i in range(1, days_smoothed+1)][::-1])
+                        not_norm_w = np.array([1./i for i in range(1, days_smoothed+1)][::-1])
                         weights = not_norm_w / not_norm_w.sum()
                         smoothed_infected[i] = (infected[i-days_smoothed+1:i+1] * weights).sum()
 
@@ -311,8 +311,8 @@ def make_prediction(url,
                     plt.plot(range(present, far_future), future_infected_best_ave, 'r-')
                 else:
                     plt.plot(range(present, far_future), future_infected_best, 'r-')
-                plt.plot(range(present, far_future), future_infected_p_sigma, 'g-')
-                plt.plot(range(present, far_future), future_infected_m_sigma, 'g-')
+                # plt.plot(range(present, far_future), future_infected_p_sigma, 'g-')
+                # plt.plot(range(present, far_future), future_infected_m_sigma, 'g-')
                 plt.fill_between(range(present, far_future), future_infected_m_sigma, future_infected_p_sigma, facecolor="gray", alpha=0.15)
                 plt.xticks(range(0, far_future), [giorni[0]] + ['' for i in range(1, len(giorni)-1)] + [giorni[-1]] +
                                ['' for i in range(peak)] + [peak_date_string] +
@@ -388,7 +388,7 @@ if __name__ == "__main__":
                     start_days_ago=args.start_days_ago,
                     days_analyzed=args.days_analyzed,  # last days analyzed
                     days_forecasted=args.days_forecasted,
-                    filter_regions=["Hubei China"], #["Italy"], #["Hubei China"], ["Lombardia"],
+                    filter_regions=["Nigeria"], #["Hubei China"], #["Italy"], #["Hubei China"], ["Lombardia"],
                     smoothing=args.smoothing,
                     json_name=args.json_name,
                     debug=args.debug,
