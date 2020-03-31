@@ -4,10 +4,14 @@ Prediction of the evolution of a pandemic using a simplified Susceptible-Infecti
 
 ## Run it
 
-You need 
+Run:
 
 ```bash
 ./covid-analysis.py  --help
+```
+
+Help:
+```
 usage: covid-analysis.py [-h] [--url URL] [--name-dataset NAME_DATASET]
                          [--regions-field REGIONS_FIELD]
                          [--date-field DATE_FIELD]
@@ -44,5 +48,5 @@ optional arguments:
 
 ## Origin
 
-See: (COVID-19: Evidence that Italy has done it right)[https://medium.com/@malemi/covid-19-evidence-that-italy-has-done-it-right-eda758309f58] (English)
+See: [COVID-19: Evidence that Italy has done it right](https://medium.com/@malemi/covid-19-evidence-that-italy-has-done-it-right-eda758309f58) (English)
 or (Stima veloce dell’andamento del numero di ricoverati con sintomi COVID-19 in Italia.)[https://medium.com/@malemi/stima-veloce-dei-ricoverati-con-sintomi-covid-19-in-lombardia-491a0c3f4a7b].
