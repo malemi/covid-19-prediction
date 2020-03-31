@@ -365,17 +365,17 @@ def make_prediction(url,
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", type=str, help="url",
+    parser.add_argument("--url", type=str, help="URL or filename. Must be a CSV.",
                         default="https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv")
-    parser.add_argument("--name-dataset", type=str, help="", default="protezione_civile")
-    parser.add_argument("--regions-field", type=str, help="", default="denominazione_regione")
-    parser.add_argument("--date-field", type=str, help="", default="data")
-    parser.add_argument("--variable-name", type=str, help="", default="totale_ospedalizzati")
-    parser.add_argument("--start-days-ago", type=int, help="", default="7")
-    parser.add_argument("--days-analyzed", type=int, help="", default="14")
-    parser.add_argument("--days-forecasted", type=int, help="", default="60")
-    parser.add_argument("--smoothing",  type=int, help="", default="7")
-    parser.add_argument("--json-name", type=str, help="", default="all_data.json")
+    parser.add_argument("--name-dataset", type=str, help="Prefix of files/directories created", default="protezione_civile")
+    parser.add_argument("--regions-field", type=str, help="In the CSV, the field with regions", default="denominazione_regione")
+    parser.add_argument("--date-field", type=str, help="In the CSV, the field with the dates", default="data")
+    parser.add_argument("--variable-name", type=str, help="In the CSV, the field with the variable we want to predict", default="totale_ospedalizzati")
+    parser.add_argument("--start-days-ago", type=int, help="Run forecasts also in the past, starting N days ago.", default="7")
+    parser.add_argument("--days-analyzed", type=int, help="Number of days used for the fit", default="14")
+    parser.add_argument("--days-forecasted", type=int, help="How many days in the future.", default="60")
+    parser.add_argument("--smoothing",  type=int, help="How many days used for smoothing (poss >= days-analyzed)", default="7")
+    parser.add_argument("--json-name", type=str, help="Name of the JSON file with all data", default="all_data.json")
     parser.add_argument("--debug", action="store_true")
 
     args = parser.parse_args()
@@ -388,7 +388,7 @@ if __name__ == "__main__":
                     start_days_ago=args.start_days_ago,
                     days_analyzed=args.days_analyzed,  # last days analyzed
                     days_forecasted=args.days_forecasted,
-                    filter_regions=["Nigeria"], #["Hubei China"], #["Italy"], #["Hubei China"], ["Lombardia"],
+                    filter_regions=None, #["Hubei China"], #["Italy"], #["Hubei China"], ["Lombardia"],
                     smoothing=args.smoothing,
                     json_name=args.json_name,
                     debug=args.debug,

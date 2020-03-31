@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
 import csv
 import urllib.request
 
 base_url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/"
 filename = "time_series_covid19_confirmed_global.csv"
-#urllib.request.urlretrieve(base_url + filename, filename)
+print(f"Reading {filename}")
+urllib.request.urlretrieve(base_url + filename, filename)
+print("Done")
 with open(filename) as f:
     lines = csv.reader(f, delimiter=',', quotechar='"')
     for i, line in enumerate(lines):
@@ -17,7 +20,9 @@ with open(filename) as f:
                 confirmed.setdefault(" ".join(line[0:2]).strip(), {})[keys[j]] = v
 
 filename = "time_series_covid19_deaths_global.csv"
-#urllib.request.urlretrieve(base_url + filename, filename)
+print(f"Reading {filename}")
+urllib.request.urlretrieve(base_url + filename, filename)
+print("Done")
 with open(filename) as f:
     lines = csv.reader(f, delimiter=',', quotechar='"')
     for i, line in enumerate(lines):
@@ -31,7 +36,9 @@ with open(filename) as f:
                 deaths.setdefault(" ".join(line[0:2]).strip(), {})[keys[j]] = v
 
 filename = "time_series_covid19_recovered_global.csv"
-#urllib.request.urlretrieve(base_url + filename, filename)
+print(f"Reading {filename}")
+urllib.request.urlretrieve(base_url + filename, filename)
+print("Done")
 with open(filename) as f:
     lines = csv.reader(f, delimiter=',', quotechar='"')
     for i, line in enumerate(lines):
@@ -53,7 +60,7 @@ for country, kv in confirmed.items():
     except KeyError:
         print(f"Error on {country}")
 
-with open("time_series_adjusted", "w") as out:
+with open("time_series_adjusted.csv", "w") as out:
     out.write("country,date,confirmed,deaths,recovered,infectious\n")
     for t in total:
         out.write(t + "\n")
